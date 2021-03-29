@@ -1,2 +1,6 @@
 numpy
 pandas
+pytorch
+onnx
+tensorboard
+scikit-learn
