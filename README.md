@@ -18,3 +18,9 @@ Run
 ```
 python process_data.py
 ```
+
+#### Model Training
+Run
+```
+python train.py
+```
