@@ -4,3 +4,6 @@ pytorch
 onnx
 tensorboard
 scikit-learn
+matplotlib
+seaborn
+pandas-profiling
