@@ -1,7 +1,7 @@
 import pandas as pd
 from utils import label_encoding
 import numpy as np
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from pandas_profiling import ProfileReport
 import seaborn as sn
 import matplotlib.pyplot as plt
@@ -30,14 +30,12 @@ print(f"total number of rows in cleaned csv (no rows contain nan): {len(vechicle
 odometer_low = vechicles_csv.odometer.quantile(.01)
 odometer_high = vechicles_csv.odometer.quantile(.95)
 print(odometer_low, odometer_high)
-# vechicles_csv.odometer = vechicles_csv.odometer.clip(lower=odometer_low, upper=odometer_high)
 vechicles_csv = vechicles_csv[vechicles_csv.odometer < odometer_high]
 vechicles_csv = vechicles_csv[vechicles_csv.odometer > odometer_low]
 
 price_low = vechicles_csv.price.quantile(.045)
 price_high = vechicles_csv.price.quantile(.988)
 print(price_low, price_high)
-# vechicles_csv.price = vechicles_csv.price.clip(lower=price_low, upper=price_high)
 vechicles_csv = vechicles_csv[vechicles_csv.price < price_high]
 vechicles_csv = vechicles_csv[vechicles_csv.price > price_low]
 
@@ -52,7 +50,6 @@ for col in object_cat_columns:
         le = LabelEncoder()
         le.fit(list(vechicles_csv[col].astype(str).values))
         vechicles_csv[col] = le.transform(list(vechicles_csv[col].astype(str).values))
-
 
 # remove unwanted columns and duplicates
 vechicles_csv.reset_index(drop=True, inplace=True)
@@ -71,25 +68,48 @@ plt.title("Pearson Correlation")
 # plt.show()
 plt.savefig("./heatmap-correlation.png", dpi=256, bbox_inches='tight')
 
+# detailed report of csv
 profile = ProfileReport(vechicles_csv, title="Pandas Profiling Report", vars={'num':{'low_categorical_threshold': 0}})
 profile.to_file("vehicles_csv_report.html")
 
-"""
-# and scaler function:
-# use after correlation
-features_to_scale = ["region", "year", "manufacturer", "model", "condition", "cylinders", "fuel", "odometer",
-                        "title_status", "transmission", "drive", "type", "paint_color", "state"]
-scaler = StandardScaler()
-vechicles_csv = pd.DataFrame(scaler.fit_transform(vechicles_csv), columns=features_to_scale)
 
-# for each feature print min, max, mean std, unique
+print(vechicles_csv.columns)
 
-# # TODO check the min. max values of numpy array (some car selling prices are 0!!)
-df_numpy = df.to_numpy()
-# print(df_numpy.shape)
-df_numpy = np.delete(df_numpy, 0, 1)
-df_numpy[:, [1, 14]] = df_numpy[:, [14, 1]]
-# print(df_numpy.shape)
-#
-np.save(open("features.npy", "wb"), df_numpy)
-"""
+# move price column to last
+price_df = vechicles_csv.pop("price")
+vechicles_csv["price"] = price_df
+
+# all 14 features
+df_numpy = vechicles_csv.to_numpy()
+np.save(open("./datasets/features_14.npy", "wb"), df_numpy)
+
+# top 12 features
+features_to_drop = ["region", "paint_color"]
+new_df = vechicles_csv.drop(features_to_drop, axis=1)
+df_numpy = new_df.to_numpy()
+np.save(open("./datasets/features_12.npy", "wb"), df_numpy)
+
+# top 11 features
+features_to_drop = ["region", "paint_color", "state"]
+new_df = vechicles_csv.drop(features_to_drop, axis=1)
+df_numpy = new_df.to_numpy()
+np.save(open("./datasets/features_11.npy", "wb"), df_numpy)
+
+# top 10 features
+features_to_drop = ["region", "paint_color", "state", "type"]
+new_df = vechicles_csv.drop(features_to_drop, axis=1)
+df_numpy = new_df.to_numpy()
+np.save(open("./datasets/features_10.npy", "wb"), df_numpy)
+
+# top 8 features
+features_to_drop = ["region", "paint_color", "state", "type", "manufacturer", "model"]
+new_df = vechicles_csv.drop(features_to_drop, axis=1)
+df_numpy = new_df.to_numpy()
+np.save(open("./datasets/features_8.npy", "wb"), df_numpy)
+
+# top 5 features for baseline comparison
+baseline_features_to_consider = [ "price", "year", "manufacturer", "odometer", "transmission", "paint_color",]
+colms_to_remove = [col for col in vechicles_csv.columns if col not in baseline_features_to_consider]
+new_df = vechicles_csv.drop(colms_to_remove, axis=1)
+df_numpy = new_df.to_numpy()
+np.save(open("./datasets/features_5.npy", "wb"), df_numpy)
