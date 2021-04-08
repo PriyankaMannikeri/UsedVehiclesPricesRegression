@@ -1,20 +1,20 @@
 from torch import nn
 
 
-def model():
+def model(num_inputs=14, num_initial_nodes=100):
     # define model architecture
     model = nn.Sequential(
-        nn.Linear(14, 100),
+        nn.Linear(num_inputs, max(100, num_initial_nodes)),
         # nn.BatchNormd(500),
         nn.LeakyReLU(),
         # nn.Dropout(p=0.1),
 
-        nn.Linear(100, 100),
+        nn.Linear(max(100, num_initial_nodes), max(100, num_initial_nodes//2)),
         # nn.BatchNorm1d(200),
         nn.LeakyReLU(),
         # nn.Dropout(p=0.1),
 
-        nn.Linear(100, 50),
+        nn.Linear(max(100, num_initial_nodes//2), 50),
         # nn.BatchNorm1d(100),
         nn.LeakyReLU(),
         # nn.Dropout(p=0.1),
