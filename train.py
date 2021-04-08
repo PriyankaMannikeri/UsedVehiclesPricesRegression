@@ -22,10 +22,10 @@ def launch_tb():
     # _ = p.communicate()
 
 
-def train(num_feat):
+def train(num_feat, num_initial_node=100):
     # paramerters
     num_features = num_feat
-    divide_by_max = False
+    divide_by_max = True
     standard_scaler = True
     # loss = MSELoss()
     loss = L1Loss()
@@ -44,7 +44,7 @@ def train(num_feat):
     # generate random experiment tracking id
     source = string.ascii_letters + string.digits
     expt_id = ''.join((random.choice(source) for i in range(10)))
-    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-{}".format(num_features, standard_scaler, divide_by_max, expt_id)
+    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-{}".format(num_features, standard_scaler, divide_by_max, num_initial_node, expt_id)
     writer = SummaryWriter("./experiments/{}".format(expt_name))
 
     data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"))
@@ -69,7 +69,7 @@ def train(num_feat):
     test_dataset = UsedVechiclesDataset(test_data, test_price)
     test_dataloader = DataLoader(test_dataset, batch_size=1)
 
-    regressor = model(num_inputs=num_features)
+    regressor = model(num_inputs=num_features, num_initial_nodes=num_initial_node)
     regressor = regressor.float()
 
     optimizer = optim.Adam(regressor.parameters(), lr=lr)
