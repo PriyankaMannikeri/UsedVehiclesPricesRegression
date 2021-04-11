@@ -1,9 +1,10 @@
 numpy
 pandas
-pytorch
+torch
 onnx
 tensorboard
 scikit-learn
 matplotlib
 seaborn
 pandas-profiling
+torchvision
