@@ -65,7 +65,7 @@ vechicles_csv.drop_duplicates(inplace=True)
 vechicles_csv.reset_index(drop=True, inplace=True)
 vechicles_csv.reset_index(drop=True)
 print(f"total number of rows in cleaned csv (after removing duplicates): {len(vechicles_csv)}")
-exit(-1)
+
 price_df = vechicles_csv.pop("price")
 vechicles_csv["price"] = price_df
 # correlation
