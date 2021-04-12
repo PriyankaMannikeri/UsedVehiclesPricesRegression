@@ -25,7 +25,7 @@ def launch_tb():
 
 def train(job):
     # paramerters
-    num_features, num_initial_node, filtered_dataset = job
+    num_features, num_initial_node, filtered_dataset, num_model_layers = job
     divide_by_max = True
     standard_scaler = True
     # loss = MSELoss()
@@ -47,8 +47,8 @@ def train(job):
     # generate random experiment tracking id
     source = string.ascii_letters + string.digits
     expt_id = ''.join((random.choice(source) for i in range(10)))
-    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-{}".\
-        format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, expt_id)
+    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-num_model_layers-{}-{}".\
+        format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, num_model_layers, expt_id)
     writer = SummaryWriter("./experiments/{}".format(expt_name))
 
     # dumpy json file
@@ -86,7 +86,7 @@ def train(job):
     test_dataset = UsedVechiclesDataset(test_data, test_price)
     test_dataloader = DataLoader(test_dataset, batch_size=1)
 
-    regressor = model(num_inputs=num_features, num_initial_nodes=num_initial_node)
+    regressor = model(num_inputs=num_features, num_initial_nodes=num_initial_node, num_model_layers=num_model_layers)
     regressor = regressor.float()
 
     optimizer = optim.Adam(regressor.parameters(), lr=lr)
