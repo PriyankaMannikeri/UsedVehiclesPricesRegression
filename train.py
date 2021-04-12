@@ -12,6 +12,7 @@ import subprocess
 import shlex
 import random
 import string
+import json
 
 
 def launch_tb():
@@ -22,9 +23,9 @@ def launch_tb():
     # _ = p.communicate()
 
 
-def train(num_feat, num_initial_node=100):
+def train(job):
     # paramerters
-    num_features = num_feat
+    num_features, num_initial_node, filtered_dataset = job
     divide_by_max = True
     standard_scaler = True
     # loss = MSELoss()
@@ -33,21 +34,37 @@ def train(num_feat, num_initial_node=100):
     lr = 1e-2
     loss_mult = 1e-2
 
-    num_epochs = 400
+    num_epochs = 300
     log_loss_iter = 20000
-    evaluate_test_iter = 10000
-    save_model_iter = 10000
+    evaluate_test_iter = 20000
+    save_model_iter = 20000
     scheduler_iter = 4000
+    train_percentage = 0.9
+    random_state = random.randint(1, 99999)
 
     launch_tb()
 
     # generate random experiment tracking id
     source = string.ascii_letters + string.digits
     expt_id = ''.join((random.choice(source) for i in range(10)))
-    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-{}".format(num_features, standard_scaler, divide_by_max, num_initial_node, expt_id)
+    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-{}".\
+        format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, expt_id)
     writer = SummaryWriter("./experiments/{}".format(expt_name))
 
-    data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"))
+    # dumpy json file
+    parameters = {
+        "num_features": num_features, "num_initial_node": num_initial_node, "filtered_dataset": filtered_dataset,
+        "divide_by_max": divide_by_max, "standard_scaler": standard_scaler, "batch_size": batch_size,
+        "lr": lr, "loss_mult": loss_mult, "num_epochs": num_epochs, "evaluate_test_iter": evaluate_test_iter,
+        "train_percentage": train_percentage, "random_state": random_state
+    }
+    with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
+        json.dump(parameters, f, ensure_ascii=False, indent=4)
+
+    if not filtered_dataset:
+        data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"))
+    elif filtered_dataset:
+        data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"))
 
     if divide_by_max:
         data[:, 0:-1] = data[:, 0:-1] * 1. / np.max(data[:, 0:-1], axis=0)
@@ -58,8 +75,8 @@ def train(num_feat, num_initial_node=100):
 
     # train, test split
     # shuffle data
-    data = shuffle(data, random_state=1234)
-    train_idx = int(0.9*data.shape[0])
+    data = shuffle(data, random_state=random_state)
+    train_idx = int(train_percentage*data.shape[0])
     train_data, train_price = data[0:train_idx, 0:-1], data[0:train_idx, -1]
     test_data, test_price = data[train_idx:, 0:-1], data[train_idx:, -1]
 
