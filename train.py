@@ -56,7 +56,7 @@ def train(job):
         "num_features": num_features, "num_initial_node": num_initial_node, "filtered_dataset": filtered_dataset,
         "divide_by_max": divide_by_max, "standard_scaler": standard_scaler, "batch_size": batch_size,
         "lr": lr, "loss_mult": loss_mult, "num_epochs": num_epochs, "evaluate_test_iter": evaluate_test_iter,
-        "train_percentage": train_percentage, "random_state": random_state
+        "train_percentage": train_percentage, "random_state": random_state, "num_model_layers": num_model_layers,
     }
     with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
         json.dump(parameters, f, ensure_ascii=False, indent=4)

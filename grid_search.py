@@ -4,7 +4,7 @@ from train import train
 
 # def run_exp(num_feat):
 def run_exp(exp):
-    num_features, num_initial_node, filtered_dataset = exp
+    num_features, num_initial_node, filtered_dataset, num_model_layers = exp
     print("running experiment with num_features: {}\nnum_initial_node: {}\nfiltered_dataset: {}\nnum_model_layers: {}".format(num_initial_node, num_initial_node, filtered_dataset, num_model_layers))
     # train(11, num_initial_node)
     train(exp)
