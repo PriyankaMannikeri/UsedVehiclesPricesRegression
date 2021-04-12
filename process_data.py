@@ -86,7 +86,6 @@ print(vechicles_csv.columns)
 price_df = vechicles_csv.pop("price")
 vechicles_csv["price"] = price_df
 
-
 # all 14 features
 df_numpy = vechicles_csv.to_numpy()
 np.save(open("./datasets/filtered/features_14.npy", "wb"), df_numpy)
