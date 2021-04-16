@@ -25,7 +25,7 @@ def launch_tb():
 
 def train(job):
     # paramerters
-    num_features, num_initial_node, filtered_dataset, num_model_layers = job
+    num_features, num_initial_node, filtered_dataset, num_model_layers, kfold_test_value = job
     divide_by_max = True
     standard_scaler = True
     # loss = MSELoss()
@@ -40,15 +40,19 @@ def train(job):
     save_model_iter = 20000
     scheduler_iter = 4000
     train_percentage = 0.9
-    random_state = random.randint(1, 99999)
+
+    if kfold_test_value is None:
+        random_state = random.randint(1, 99999)
+    else:
+        random_state = 2180
 
     launch_tb()
 
     # generate random experiment tracking id
     source = string.ascii_letters + string.digits
     expt_id = ''.join((random.choice(source) for i in range(10)))
-    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-num_model_layers-{}-{}".\
-        format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, num_model_layers, expt_id)
+    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-num_model_layers-{}-kfold_test_value-{}-{}".\
+        format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, num_model_layers, kfold_test_value, expt_id)
     writer = SummaryWriter("./experiments/{}".format(expt_name))
 
     # dumpy json file
@@ -56,7 +60,7 @@ def train(job):
         "num_features": num_features, "num_initial_node": num_initial_node, "filtered_dataset": filtered_dataset,
         "divide_by_max": divide_by_max, "standard_scaler": standard_scaler, "batch_size": batch_size,
         "lr": lr, "loss_mult": loss_mult, "num_epochs": num_epochs, "evaluate_test_iter": evaluate_test_iter,
-        "train_percentage": train_percentage, "random_state": random_state, "num_model_layers": num_model_layers,
+        "train_percentage": train_percentage, "random_state": random_state, "num_model_layers": num_model_layers, "kfold_test_value": kfold_test_value,
     }
     with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
         json.dump(parameters, f, ensure_ascii=False, indent=4)
@@ -77,8 +81,25 @@ def train(job):
     # shuffle data
     data = shuffle(data, random_state=random_state)
     train_idx = int(train_percentage*data.shape[0])
-    train_data, train_price = data[0:train_idx, 0:-1], data[0:train_idx, -1]
-    test_data, test_price = data[train_idx:, 0:-1], data[train_idx:, -1]
+    if kfold_test_value is None:
+        train_data, train_price = data[0:train_idx, 0:-1], data[0:train_idx, -1]
+        test_data, test_price = data[train_idx:, 0:-1], data[train_idx:, -1]
+    else:
+        test_length = data.shape[0] - train_idx
+        train_data = np.concatenate(
+            (
+                data[0:(kfold_test_value-1)*test_length, 0:-1],
+                data[kfold_test_value*test_length, 0:-1]
+            )
+        )
+        train_price = np.concatenate(
+            (
+                data[0:(kfold_test_value-1)*test_length, -1],
+                data[test_length:kfold_test_value*test_length:, -1]
+            )
+        )
+        test_data = data[(kfold_test_value-1)*test_length:kfold_test_value*test_length, 0:-1]
+        test_price = data[(kfold_test_value-1)*test_length:kfold_test_value*test_length, -1]
 
     train_dataset = UsedVechiclesDataset(train_data, train_price)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=0, shuffle=True, drop_last=True)
