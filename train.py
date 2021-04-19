@@ -90,13 +90,13 @@ def train(job):
         train_data = np.concatenate(
             (
                 data[0:(kfold_test_value-1)*test_length, 0:-1],
-                data[kfold_test_value*test_length, 0:-1]
+                data[kfold_test_value*test_length:, 0:-1]
             )
         )
         train_price = np.concatenate(
             (
                 data[0:(kfold_test_value-1)*test_length, -1],
-                data[test_length:kfold_test_value*test_length:, -1]
+                data[kfold_test_value*test_length:, -1]
             )
         )
         test_data = data[(kfold_test_value-1)*test_length:kfold_test_value*test_length, 0:-1]
