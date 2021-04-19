@@ -163,7 +163,7 @@ def train(job):
                         test_abs_loss += test_curr_abs_loss
                         if test_curr_abs_loss < best_test_mae:
                             # Write-Overwrites
-                            file1 = open(expt_name + "/best_test_mae.txt", "a")#write mode
+                            file1 = open("./experiments/" + expt_name + "/best_test_mae.txt", "a")#write mode
                             file1.write("{} @{}".format(test_curr_abs_loss, iter))
                             file1.close()
 
