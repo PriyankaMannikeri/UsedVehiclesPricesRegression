@@ -10,7 +10,7 @@ def run_exp(exp):
     train(exp)
 
 # num_features = [14, 12, 11, 10, 8, 5]
-num_features = [11]
+num_features = [48]
 num_initial_nodes = [600]
 num_model_layers = [9]
 dataset_filtered = [True]

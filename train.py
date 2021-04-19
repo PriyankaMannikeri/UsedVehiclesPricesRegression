@@ -51,7 +51,7 @@ def train(job):
     # generate random experiment tracking id
     source = string.ascii_letters + string.digits
     expt_id = ''.join((random.choice(source) for i in range(10)))
-    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-num_model_layers-{}-kfold_test_value-{}-{}".\
+    expt_name = "num-features-{}-scalar-{}-maxnorm-{}-numnodes-{}-trainSplit-{}-datasetFiltered-{}-num_model_layers-{}-onehot-True-kfold_test_value-{}-{}".\
         format(num_features, standard_scaler, divide_by_max, num_initial_node, train_percentage, filtered_dataset, num_model_layers, kfold_test_value, expt_id)
     writer = SummaryWriter("./experiments/{}".format(expt_name))
 
@@ -65,10 +65,11 @@ def train(job):
     with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
         json.dump(parameters, f, ensure_ascii=False, indent=4)
 
-    if not filtered_dataset:
-        data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"))
-    elif filtered_dataset:
-        data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"))
+    # if not filtered_dataset:
+    #     data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    # elif filtered_dataset:
+    #     data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    data = np.load(open("./datasets/onehot-encoded/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
 
     if divide_by_max:
         data[:, 0:-1] = data[:, 0:-1] * 1. / np.max(data[:, 0:-1], axis=0)
