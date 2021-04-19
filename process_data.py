@@ -64,6 +64,11 @@ vechicles_csv["price"] = price_df
 # one-hot encoding
 vechicles_csv = pd.get_dummies(vechicles_csv, columns=["condition", "cylinders", "fuel", "title_status", "transmission",
                                                        "drive", "type"])
+for col in ["manufacturer", "model"]:
+    if col in vechicles_csv.columns:
+        le = LabelEncoder()
+        le.fit(list(vechicles_csv[col].astype(str).values))
+        vechicles_csv[col] = le.transform(list(vechicles_csv[col].astype(str).values))
 
 
 # remove unwanted columns and duplicates
