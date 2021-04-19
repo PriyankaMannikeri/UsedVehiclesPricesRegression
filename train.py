@@ -69,7 +69,7 @@ def train(job):
     #     data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
     # elif filtered_dataset:
     #     data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
-    data = np.load(open("./datasets/onehot-encoded/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    data = np.load(open("./datasets/onehot-encoded/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
 
     if divide_by_max:
         data[:, 0:-1] = data[:, 0:-1] * 1. / np.max(data[:, 0:-1], axis=0)
@@ -115,6 +115,7 @@ def train(job):
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
 
     iter = 0
+    best_test_mae = float("inf")
 
     regressor.train()
     print(f"len of train: {len(train_dataloader.dataset)} | len of test: {len(test_dataloader.dataset)}")
@@ -160,6 +161,11 @@ def train(job):
                         test_loss += loss(test_pred.flatten(), test_gt) * loss_mult
                         test_curr_abs_loss = torch.abs(test_pred.flatten() - test_gt).float().item()
                         test_abs_loss += test_curr_abs_loss
+                        if test_curr_abs_loss < best_test_mae:
+                            # Write-Overwrites
+                            file1 = open(expt_name + "/best_test_mae.txt", "a")#write mode
+                            file1.write("{} @{}".format(test_curr_abs_loss, iter))
+                            file1.close()
 
                         test_gt_values.append(test_gt.item())
                         test_pred_values.append(test_pred.float().item())
