@@ -113,7 +113,7 @@ features_to_drop = ["region", "paint_color", "state"]
 new_df = vechicles_csv.drop(features_to_drop, axis=1)
 df_numpy = new_df.to_numpy()
 # np.save(open("./datasets/filtered/features_11.npy", "wb"), df_numpy)
-np.save(open("./datasets/onehot-encoded/features_11.npy", "wb"), df_numpy)
+np.save(open("./datasets/onehot-encoded/features_48.npy", "wb"), df_numpy)
 
 # top 10 features
 # features_to_drop = ["region", "paint_color", "state", "type"]
