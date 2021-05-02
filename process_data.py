@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 from pandas_profiling import ProfileReport
 import seaborn as sn
 import matplotlib.pyplot as plt
+from category_encoders import *
 
 
 # vechicles_csv = pd.read_csv("vehicles.csv")
@@ -54,21 +55,40 @@ object_cat_columns = ["region", "manufacturer", "model", "condition", "cylinders
 price_df = vechicles_csv.pop("price")
 vechicles_csv["price"] = price_df
 
-# label encoding
-# for col in object_cat_columns:
-#     if col in vechicles_csv.columns:
-#         le = LabelEncoder()
-#         le.fit(list(vechicles_csv[col].astype(str).values))
-#         vechicles_csv[col] = le.transform(list(vechicles_csv[col].astype(str).values))
 
-# one-hot encoding
-vechicles_csv = pd.get_dummies(vechicles_csv, columns=["condition", "cylinders", "fuel", "title_status", "transmission",
-                                                       "drive", "type"])
-for col in ["manufacturer", "model"]:
+# ordered label encoding
+# mapping = [
+#     {
+#         "col": "condition",
+#         "mapping":
+#             {
+#                 "new": 0,
+#                 "like new": 1,
+#                 "excellent": 2,
+#                 "good": 3,
+#                 "fair": 4,
+#                 "salvage": 5,
+#             }
+#     }
+# ]
+# enc = OrdinalEncoder(cols=["condition"], mapping=mapping).fit(vechicles_csv)
+# vechicles_csv = enc.transform(vechicles_csv)
+
+# label encoding
+for col in object_cat_columns:
     if col in vechicles_csv.columns:
         le = LabelEncoder()
         le.fit(list(vechicles_csv[col].astype(str).values))
         vechicles_csv[col] = le.transform(list(vechicles_csv[col].astype(str).values))
+
+# one-hot encoding
+# vechicles_csv = pd.get_dummies(vechicles_csv, columns=["condition", "cylinders", "fuel", "title_status", "transmission",
+#                                                        "drive", "type"])
+# for col in ["manufacturer", "model"]:
+#     if col in vechicles_csv.columns:
+#         le = LabelEncoder()
+#         le.fit(list(vechicles_csv[col].astype(str).values))
+#         vechicles_csv[col] = le.transform(list(vechicles_csv[col].astype(str).values))
 
 
 # remove unwanted columns and duplicates
@@ -86,11 +106,11 @@ fig = plt.figure(figsize=(15, 15))
 sn.heatmap(corrMatrix, annot=True)
 plt.title("Pearson Correlation")
 # plt.show()
-plt.savefig("./heatmap-correlation-filtered-onehot.png", dpi=256, bbox_inches='tight')
+# plt.savefig("./heatmap-correlation-filtered-onehot.png", dpi=256, bbox_inches='tight')
 
 # detailed report of csv
-# profile = ProfileReport(vechicles_csv, title="Pandas Profiling Report", vars={'num':{'low_categorical_threshold': 0}})
-# profile.to_file("vehicles_csv_report-filtered.html")
+profile = ProfileReport(vechicles_csv, title="Pandas Profiling Report", vars={'num':{'low_categorical_threshold': 0}})
+profile.to_file("vehicles_csv_report-filtered.html")
 
 print(vechicles_csv.columns)
 
@@ -113,7 +133,8 @@ features_to_drop = ["region", "paint_color", "state"]
 new_df = vechicles_csv.drop(features_to_drop, axis=1)
 df_numpy = new_df.to_numpy()
 # np.save(open("./datasets/filtered/features_11.npy", "wb"), df_numpy)
-np.save(open("./datasets/onehot-encoded/features_48.npy", "wb"), df_numpy)
+# np.save(open("./datasets/onehot-encoded/features_48.npy", "wb"), df_numpy)
+np.save(open("./datasets/ordered-label-encoding/features_11.npy", "wb"), df_numpy)
 
 # top 10 features
 # features_to_drop = ["region", "paint_color", "state", "type"]

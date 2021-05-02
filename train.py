@@ -13,6 +13,7 @@ import shlex
 import random
 import string
 import json
+import os
 
 
 def launch_tb():
@@ -65,11 +66,12 @@ def train(job):
     with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
         json.dump(parameters, f, ensure_ascii=False, indent=4)
 
-    # if not filtered_dataset:
-    #     data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
-    # elif filtered_dataset:
-    #     data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
-    data = np.load(open("./datasets/onehot-encoded/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    if not filtered_dataset:
+        data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    elif filtered_dataset:
+        # data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+        data = np.load(open("./datasets/ordered-label-encoding/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+    # data = np.load(open("./datasets/onehot-encoded/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
 
     if divide_by_max:
         data[:, 0:-1] = data[:, 0:-1] * 1. / np.max(data[:, 0:-1], axis=0)
