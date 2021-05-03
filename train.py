@@ -30,6 +30,7 @@ def train(job):
     divide_by_max = True
     standard_scaler = True
     # loss = MSELoss()
+    # MAE loss
     loss = L1Loss()
     batch_size = 32
     lr = 1e-2
@@ -40,8 +41,10 @@ def train(job):
     evaluate_test_iter = 20000
     save_model_iter = 20000
     scheduler_iter = 4000
+    # train 90 - test 10
     train_percentage = 0.9
 
+    # random shuffling state
     if kfold_test_value is None:
         random_state = random.randint(1, 99999)
     else:
@@ -66,17 +69,20 @@ def train(job):
     with open('./experiments/{}/parameters.json'.format(expt_name), 'w', encoding='utf-8') as f:
         json.dump(parameters, f, ensure_ascii=False, indent=4)
 
+    # load numpy dataset
     if not filtered_dataset:
         data = np.load(open("./datasets/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
     elif filtered_dataset:
-        # data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
-        data = np.load(open("./datasets/ordered-label-encoding/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+        data = np.load(open("./datasets/filtered/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
+        # data = np.load(open("./datasets/ordered-label-encoding/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
     # data = np.load(open("./datasets/onehot-encoded/features_{}.npy".format(num_features), "rb"), allow_pickle=True)
 
+    # Normalize features except Price column (last column)
     if divide_by_max:
         data[:, 0:-1] = data[:, 0:-1] * 1. / np.max(data[:, 0:-1], axis=0)
 
     if standard_scaler:
+        # subtract mean and divide by variance
         trans = StandardScaler()
         data[:, 0:-1] = trans.fit_transform(data[:, 0:-1])
 
@@ -114,6 +120,7 @@ def train(job):
     regressor = regressor.float()
 
     optimizer = optim.Adam(regressor.parameters(), lr=lr)
+    # decrease lr by 0.98 every 4000 iterations
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
 
     iter = 0
@@ -131,9 +138,13 @@ def train(job):
             data = batch["data"].float()
             gt = batch["gt"].float()
 
+            # Forward propagation
             pred = regressor(data).float()
+
+            # Compute loss
             curr_loss = loss(pred.flatten(), gt) * loss_mult
 
+            # Back propagation
             curr_loss.backward()
             optimizer.step()
 
